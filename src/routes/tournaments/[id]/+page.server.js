@@ -6,6 +6,7 @@ import {
 	addPlayerToTournament,
 	removePlayerFromTournament
 } from '$lib/server/repositories/tournament-players.js';
+import { generateRound, listMatches, getRankings } from '$lib/server/repositories/matches.js';
 
 export function load({ params }) {
 	const tournament = getTournament(params.id);
@@ -16,7 +17,9 @@ export function load({ params }) {
 	return {
 		tournament,
 		registeredPlayers: listPlayersInTournament(params.id),
-		availablePlayers: listPlayersNotInTournament(params.id)
+		availablePlayers: listPlayersNotInTournament(params.id),
+		matches: listMatches(params.id),
+		rankings: getRankings(params.id)
 	};
 }
 
@@ -49,5 +52,14 @@ export const actions = {
 		}
 
 		return { success: true };
+	},
+
+	generateRound: async ({ params }) => {
+		try {
+			const result = generateRound(params.id);
+			return { success: true, round: result.round };
+		} catch (err) {
+			return fail(400, { error: err.message });
+		}
 	}
 };

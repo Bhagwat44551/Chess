@@ -86,6 +86,90 @@
 			</table>
 		{/if}
 	</section>
+
+	<section class="match-system">
+		<h2>Matches</h2>
+		<form
+			method="POST"
+			action="?/generateRound"
+			use:enhance
+			onsubmit={(e) => {
+				if (data.registeredPlayers.length < 2) {
+					alert('Register at least 2 players before generating a round.');
+					e.preventDefault();
+				}
+			}}
+		>
+			<button type="submit">Generate Random Round</button>
+		</form>
+
+		{#if data.matches.length === 0}
+			<p class="empty">No matches played yet. Generate a round to randomly pair players.</p>
+		{:else}
+			{#each [...new Set(data.matches.map((m) => m.round))] as round}
+				<h3>Round {round}</h3>
+				<table>
+					<thead>
+						<tr>
+							<th>White</th>
+							<th>Black</th>
+							<th>Result</th>
+							<th>Winner</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each data.matches.filter((m) => m.round === round) as m (m.id)}
+							<tr>
+								<td>{m.white_name}</td>
+								<td>{m.black_name}</td>
+								<td>{m.result === 'white_win' ? 'White wins' : m.result === 'black_win' ? 'Black wins' : 'Draw'}</td>
+								<td>{m.winner_name ?? '—'}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/each}
+		{/if}
+	</section>
+
+	<section class="rankings">
+		<h2>Final Rankings</h2>
+
+		{#if data.rankings.length === 0}
+			<p class="empty">No standings yet — register players and generate a round.</p>
+		{:else}
+			<ol class="podium">
+				{#each data.rankings.slice(0, 3) as p, i (p.id)}
+					<li class="place place-{i + 1}">
+						<span class="medal">{['🥇', '🥈', '🥉'][i]}</span>
+						<span class="name">{p.name}</span>
+						<span class="points">{p.points} pts</span>
+					</li>
+				{/each}
+			</ol>
+
+			{#if data.rankings.length > 3}
+				<table>
+					<thead>
+						<tr>
+							<th>Rank</th>
+							<th>Name</th>
+							<th>Points</th>
+						</tr>
+					</thead>
+					<tbody>
+						{#each data.rankings.slice(3) as p, i (p.id)}
+							<tr>
+								<td>{i + 4}</td>
+								<td>{p.name}</td>
+								<td>{p.points}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			{/if}
+		{/if}
+	</section>
 </main>
 
 <style>
@@ -200,5 +284,63 @@
 
 	.empty {
 		color: #666;
+	}
+
+	.match-system form {
+		margin-bottom: 1rem;
+	}
+
+	.match-system h3 {
+		margin-top: 1.5rem;
+		margin-bottom: 0.5rem;
+		font-size: 1rem;
+		color: #444;
+	}
+
+	.podium {
+		list-style: none;
+		display: flex;
+		gap: 1rem;
+		padding: 0;
+		margin: 1rem 0;
+	}
+
+	.place {
+		flex: 1;
+		text-align: center;
+		padding: 1rem;
+		border-radius: 8px;
+		background: #f7f7f8;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.place-1 {
+		background: #fff3cd;
+		order: 2;
+	}
+
+	.place-2 {
+		background: #f1f1f1;
+		order: 1;
+	}
+
+	.place-3 {
+		background: #f6e6d8;
+		order: 3;
+	}
+
+	.medal {
+		font-size: 1.75rem;
+	}
+
+	.name {
+		font-weight: 600;
+	}
+
+	.points {
+		color: #555;
+		font-size: 0.9rem;
 	}
 </style>
