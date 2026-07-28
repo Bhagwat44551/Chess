@@ -1,42 +1,77 @@
-# sv
+# Chess Tournament Management System
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A web app for managing chess tournaments — add players, run tournaments, randomly pair and play matches, and see final rankings.
 
-## Creating a project
+Built for the Bytelogik Software Developer technical assignment.
 
-If you're seeing this, you've probably already done this step. Congrats!
+## Tech Stack
 
-```sh
-# create a new project
-npx sv create my-app
+- **[SvelteKit](https://svelte.dev/docs/kit)** (Svelte 5) — frontend + server routes
+- **JavaScript**
+- **SQLite** via Node's built-in [`node:sqlite`](https://nodejs.org/api/sqlite.html) module — no native compilation or extra dependencies required
+
+## Features
+
+- **Player Management** — create, view, edit, and delete players (name, email, rating), stored in SQLite.
+- **Tournament Management** — create, view, edit, and delete tournaments; register/remove players for a specific tournament.
+- **Match System** — randomly pairs registered players each round, randomly selects a winner for each match, and records the result. Handles odd player counts with an automatic bye.
+- **Rankings** — live standings computed from match points, with a 1st/2nd/3rd place podium display.
+
+## Prerequisites
+
+- **Node.js 22 or later** (required — the app uses the built-in `node:sqlite` module, which isn't available in earlier Node versions)
+
+Check your version:
+```bash
+node -v
 ```
 
-To recreate this project with the same configuration:
+## Setup
 
-```sh
-# recreate this project
-npx sv@0.16.6 create --template minimal --types jsdoc --no-install chess-tournament
-```
+```bash
+# Install dependencies
+npm install
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+# Start the dev server
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Then open the URL it prints (typically `http://localhost:5173`).
 
-To create a production version of your app:
+The SQLite database file is created automatically on first run at `data/chess-tournament.db` (gitignored — each environment gets its own fresh database).
 
-```sh
+## Usage
+
+1. Go to **Players** and add a few players.
+2. Go to **Tournaments**, create a tournament, and click into it.
+3. Register players into the tournament from the dropdown.
+4. Click **Generate Random Round** to randomly pair players and play a round — repeat for as many rounds as you like.
+5. Check the **Final Rankings** section for live standings and the top-3 podium.
+
+## Project Structure
+
+```
+src/
+├── lib/
+│   └── server/
+│       ├── db.js                     # DB connection + schema setup
+│       └── repositories/
+│           ├── players.js            # Player CRUD
+│           ├── tournaments.js        # Tournament CRUD
+│           ├── tournament-players.js # Registering players into tournaments
+│           └── matches.js            # Random pairing, match results, rankings
+└── routes/
+    ├── players/                      # Player management UI
+    └── tournaments/
+        ├── +page.svelte              # Tournament list / CRUD
+        └── [id]/                     # Tournament detail: players, matches, rankings
+```
+
+## Building for Production
+
+```bash
 npm run build
+npm run preview   # preview the production build locally
 ```
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+This project uses `@sveltejs/adapter-auto`, which picks the right adapter automatically when deployed to platforms like Vercel, Netlify, or Cloudflare Pages.
