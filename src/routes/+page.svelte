@@ -1,6 +1,19 @@
 <script>
 	let { data } = $props();
 
+	/** @type {Set<string>} tournament ids currently expanded */
+	let expandedIds = $state(new Set());
+
+	function toggle(id) {
+		const next = new Set(expandedIds);
+		if (next.has(id)) {
+			next.delete(id);
+		} else {
+			next.add(id);
+		}
+		expandedIds = next;
+	}
+
 	function statusLabel(status) {
 		return { pending: 'Pending', in_progress: 'In Progress', completed: 'Completed' }[status] ?? status;
 	}
@@ -46,20 +59,71 @@
 			<h2>Ongoing Tournaments</h2>
 			<div class="ongoing-list">
 				{#each data.ongoingTournaments as t (t.id)}
-					<a class="ongoing-card" href={`/tournaments/${t.id}`}>
-						<div class="ongoing-header">
-							<h3>{t.name}</h3>
-							<span class="badge in_progress">{statusLabel(t.status)}</span>
-						</div>
-						<div class="ongoing-meta">
-							<span>{t.player_count} players</span>
-							<span>Round {t.current_round}</span>
-							<span>{t.matches_played} matches played</span>
-							{#if t.leader_name}
-								<span class="leader">Leading: {t.leader_name}</span>
-							{/if}
-						</div>
-					</a>
+					<div class="ongoing-card">
+						<button
+							type="button"
+							class="ongoing-header"
+							onclick={() => toggle(t.id)}
+							aria-expanded={expandedIds.has(t.id)}
+						>
+							<div class="ongoing-header-main">
+								<h3>{t.name}</h3>
+								<span class="badge in_progress">{statusLabel(t.status)}</span>
+							</div>
+							<div class="ongoing-meta">
+								<span>{t.player_count} players</span>
+								<span>Round {t.current_round}</span>
+								<span>{t.matches_played} matches played</span>
+								{#if t.leader_name}
+									<span class="leader">Leading: {t.leader_name}</span>
+								{/if}
+							</div>
+							<svg
+								class="chevron"
+								class:open={expandedIds.has(t.id)}
+								width="18"
+								height="18"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="2"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+							>
+								<polyline points="6 9 12 15 18 9" />
+							</svg>
+						</button>
+
+						{#if expandedIds.has(t.id)}
+							<div class="leaderboard">
+								{#if t.rankings.length === 0}
+									<p class="empty">No standings yet.</p>
+								{:else}
+									<table>
+										<thead>
+											<tr>
+												<th>Rank</th>
+												<th>Name</th>
+												<th>Rating</th>
+												<th>Points</th>
+											</tr>
+										</thead>
+										<tbody>
+											{#each t.rankings as p, i (p.id)}
+												<tr>
+													<td>{i + 1}</td>
+													<td>{p.name}</td>
+													<td>{p.rating}</td>
+													<td>{p.points}</td>
+												</tr>
+											{/each}
+										</tbody>
+									</table>
+								{/if}
+								<a class="view-link" href={`/tournaments/${t.id}`}>View full tournament &rarr;</a>
+							</div>
+						{/if}
+					</div>
 				{/each}
 			</div>
 		</section>
@@ -192,27 +256,37 @@
 	}
 
 	.ongoing-card {
-		display: block;
 		border: 1px solid #ddd;
 		border-radius: 8px;
-		padding: 1rem 1.25rem;
-		text-decoration: none;
-		color: inherit;
-		transition: border-color 0.15s;
-	}
-
-	.ongoing-card:hover {
-		border-color: #2f6feb;
+		overflow: hidden;
 	}
 
 	.ongoing-header {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
-		margin-bottom: 0.4rem;
+		gap: 1rem;
+		width: 100%;
+		padding: 1rem 1.25rem;
+		background: none;
+		border: none;
+		text-align: left;
+		cursor: pointer;
+		font: inherit;
+		color: inherit;
 	}
 
-	.ongoing-header h3 {
+	.ongoing-header:hover {
+		background: #fafafa;
+	}
+
+	.ongoing-header-main {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		flex-shrink: 0;
+	}
+
+	.ongoing-header-main h3 {
 		margin: 0;
 		font-size: 1rem;
 	}
@@ -235,6 +309,7 @@
 		flex-wrap: wrap;
 		font-size: 0.85rem;
 		color: #666;
+		flex: 1;
 	}
 
 	.leader {
@@ -242,9 +317,55 @@
 		font-weight: 500;
 	}
 
+	.chevron {
+		flex-shrink: 0;
+		transition: transform 0.15s;
+		color: #888;
+	}
+
+	.chevron.open {
+		transform: rotate(180deg);
+	}
+
+	.leaderboard {
+		padding: 0 1.25rem 1.25rem;
+		border-top: 1px solid #eee;
+	}
+
+	.leaderboard table {
+		width: 100%;
+		border-collapse: collapse;
+		margin-top: 0.75rem;
+		font-size: 0.9rem;
+	}
+
+	.leaderboard th,
+	.leaderboard td {
+		text-align: left;
+		padding: 0.5rem 0.4rem;
+		border-bottom: 1px solid #eee;
+	}
+
+	.leaderboard .view-link {
+		display: inline-block;
+		margin-top: 0.75rem;
+		font-size: 0.85rem;
+		color: #2f6feb;
+		text-decoration: none;
+	}
+
+	.leaderboard .empty {
+		color: #666;
+		margin-top: 0.75rem;
+	}
+
 	@media (max-width: 600px) {
 		.stats-bar {
 			grid-template-columns: repeat(2, 1fr);
+		}
+
+		.ongoing-header {
+			flex-wrap: wrap;
 		}
 	}
 </style>
