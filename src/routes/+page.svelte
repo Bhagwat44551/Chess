@@ -1,7 +1,6 @@
 <script>
 	let { data } = $props();
 
-	/** @type {Set<string>} tournament ids currently expanded */
 	let expandedIds = $state(new Set());
 
 	function toggle(id) {
@@ -23,13 +22,7 @@
 	<title>Chess Tournament Manager</title>
 </svelte:head>
 
-<main>
-	<nav>
-		<a href="/" aria-current="page">Home</a>
-		<a href="/players">Players</a>
-		<a href="/tournaments">Tournaments</a>
-	</nav>
-
+<main class="page">
 	<h1>Chess Tournament Manager</h1>
 	<p class="subtitle">
 		Manage players, run tournaments, and let the system randomly pair and score matches.
@@ -99,7 +92,7 @@
 								{#if t.rankings.length === 0}
 									<p class="empty">No standings yet.</p>
 								{:else}
-									<table>
+									<table class="data-table">
 										<thead>
 											<tr>
 												<th>Rank</th>
@@ -130,11 +123,11 @@
 	{/if}
 
 	<div class="cards">
-		<a class="card" href="/players">
+		<a class="card link-card" href="/players">
 			<h2>Players</h2>
 			<p>Add, edit, and remove players.</p>
 		</a>
-		<a class="card" href="/tournaments">
+		<a class="card link-card" href="/tournaments">
 			<h2>Tournaments</h2>
 			<p>Create tournaments, register players, generate rounds, and view final rankings.</p>
 		</a>
@@ -142,67 +135,30 @@
 </main>
 
 <style>
-	main {
-		max-width: 800px;
-		margin: 0 auto;
-		padding: 2rem 1rem;
-		font-family: system-ui, sans-serif;
-	}
-
-	nav {
-		display: flex;
-		gap: 1rem;
-		margin-bottom: 2rem;
-	}
-
-	nav a {
-		text-decoration: none;
-		color: #333;
-	}
-
-	nav a[aria-current='page'] {
-		font-weight: bold;
-		color: #1a1a1a;
-	}
-
-	h1 {
-		margin-bottom: 0.25rem;
-	}
-
-	.subtitle {
-		color: #555;
-		margin-top: 0;
-		margin-bottom: 2rem;
-	}
-
 	.cards {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 1rem;
 	}
 
-	.card {
-		display: block;
-		border: 1px solid #ddd;
-		border-radius: 8px;
-		padding: 1.25rem;
+	.link-card {
 		text-decoration: none;
 		color: inherit;
+		display: block;
 		transition: border-color 0.15s;
 	}
 
-	.card:hover {
-		border-color: #2f6feb;
+	.link-card:hover {
+		border-color: var(--accent);
 	}
 
-	.card h2 {
-		margin: 0 0 0.5rem;
-		color: #2f6feb;
+	.link-card h2 {
+		color: var(--accent);
 	}
 
-	.card p {
+	.link-card p {
 		margin: 0;
-		color: #555;
+		color: var(--text-secondary);
 		font-size: 0.9rem;
 	}
 
@@ -210,35 +166,6 @@
 		.cards {
 			grid-template-columns: 1fr;
 		}
-	}
-
-	.stats-bar {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 1rem;
-		margin-bottom: 2rem;
-	}
-
-	.stat {
-		text-align: center;
-		padding: 1rem 0.5rem;
-		border: 1px solid #eee;
-		border-radius: 8px;
-		background: #fafafa;
-	}
-
-	.stat-value {
-		display: block;
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: #1a1a1a;
-	}
-
-	.stat-label {
-		display: block;
-		font-size: 0.8rem;
-		color: #666;
-		margin-top: 0.15rem;
 	}
 
 	.ongoing {
@@ -256,8 +183,9 @@
 	}
 
 	.ongoing-card {
-		border: 1px solid #ddd;
-		border-radius: 8px;
+		background: var(--card-bg);
+		border: 1px solid var(--border);
+		border-radius: 10px;
 		overflow: hidden;
 	}
 
@@ -276,7 +204,7 @@
 	}
 
 	.ongoing-header:hover {
-		background: #fafafa;
+		background: #fafbfc;
 	}
 
 	.ongoing-header-main {
@@ -291,36 +219,24 @@
 		font-size: 1rem;
 	}
 
-	.badge {
-		display: inline-block;
-		padding: 0.15rem 0.5rem;
-		border-radius: 999px;
-		font-size: 0.75rem;
-	}
-
-	.badge.in_progress {
-		background: #cfe2ff;
-		color: #084298;
-	}
-
 	.ongoing-meta {
 		display: flex;
 		gap: 1rem;
 		flex-wrap: wrap;
 		font-size: 0.85rem;
-		color: #666;
+		color: var(--text-secondary);
 		flex: 1;
 	}
 
 	.leader {
-		color: #2f6feb;
-		font-weight: 500;
+		color: var(--accent);
+		font-weight: 600;
 	}
 
 	.chevron {
 		flex-shrink: 0;
 		transition: transform 0.15s;
-		color: #888;
+		color: var(--text-muted);
 	}
 
 	.chevron.open {
@@ -329,34 +245,19 @@
 
 	.leaderboard {
 		padding: 0 1.25rem 1.25rem;
-		border-top: 1px solid #eee;
+		border-top: 1px solid var(--border);
 	}
 
 	.leaderboard table {
-		width: 100%;
-		border-collapse: collapse;
 		margin-top: 0.75rem;
-		font-size: 0.9rem;
-	}
-
-	.leaderboard th,
-	.leaderboard td {
-		text-align: left;
-		padding: 0.5rem 0.4rem;
-		border-bottom: 1px solid #eee;
 	}
 
 	.leaderboard .view-link {
 		display: inline-block;
 		margin-top: 0.75rem;
 		font-size: 0.85rem;
-		color: #2f6feb;
 		text-decoration: none;
-	}
-
-	.leaderboard .empty {
-		color: #666;
-		margin-top: 0.75rem;
+		font-weight: 600;
 	}
 
 	@media (max-width: 600px) {

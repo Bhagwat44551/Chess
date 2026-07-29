@@ -3,7 +3,6 @@
 
 	let { data, form } = $props();
 
-	/** @type {string | null} id of the player currently being edited, or null */
 	let editingId = $state(null);
 
 	function startEdit(id) {
@@ -19,20 +18,15 @@
 	<title>Players · Chess Tournament</title>
 </svelte:head>
 
-<main>
-	<nav>
-		<a href="/">Home</a>
-		<a href="/players" aria-current="page">Players</a>
-		<a href="/tournaments">Tournaments</a>
-	</nav>
-
+<main class="page">
 	<h1>Players</h1>
+	<p class="subtitle">Add, edit, and remove players in the system.</p>
 
 	{#if form?.error}
-		<p class="error" role="alert">{form.error}</p>
+		<p class="error-banner" role="alert">{form.error}</p>
 	{/if}
 
-	<section class="add-player">
+	<section class="card add-player">
 		<h2>Add Player</h2>
 		<form
 			method="POST"
@@ -59,13 +53,13 @@
 		</form>
 	</section>
 
-	<section class="player-list">
+	<section class="card player-list">
 		<h2>All Players ({data.players.length})</h2>
 
 		{#if data.players.length === 0}
 			<p class="empty">No players yet. Add one above to get started.</p>
 		{:else}
-			<table>
+			<table class="data-table">
 				<thead>
 					<tr>
 						<th>Name</th>
@@ -95,7 +89,7 @@
 										<input type="email" name="email" value={player.email ?? ''} />
 										<input type="number" name="rating" value={player.rating} min="0" />
 										<button type="submit">Save</button>
-										<button type="button" onclick={cancelEdit}>Cancel</button>
+										<button type="button" class="secondary" onclick={cancelEdit}>Cancel</button>
 									</form>
 								</td>
 							{:else}
@@ -103,7 +97,7 @@
 								<td>{player.email ?? '—'}</td>
 								<td>{player.rating}</td>
 								<td class="actions">
-									<button type="button" onclick={() => startEdit(player.id)}>Edit</button>
+									<button type="button" class="secondary" onclick={() => startEdit(player.id)}>Edit</button>
 									<form
 										method="POST"
 										action="?/delete"
@@ -126,40 +120,8 @@
 </main>
 
 <style>
-	main {
-		max-width: 800px;
-		margin: 0 auto;
-		padding: 2rem 1rem;
-		font-family: system-ui, sans-serif;
-	}
-
-	nav {
-		display: flex;
-		gap: 1rem;
+	.add-player {
 		margin-bottom: 1.5rem;
-	}
-
-	nav a {
-		text-decoration: none;
-		color: #333;
-	}
-
-	nav a[aria-current='page'] {
-		font-weight: bold;
-		color: #1a1a1a;
-	}
-
-	h1 {
-		margin-bottom: 1rem;
-	}
-
-	.error {
-		background: #fdecea;
-		color: #b3261e;
-		border: 1px solid #f5c2c0;
-		padding: 0.5rem 0.75rem;
-		border-radius: 6px;
-		margin-bottom: 1rem;
 	}
 
 	.add-player form {
@@ -167,7 +129,6 @@
 		gap: 1rem;
 		flex-wrap: wrap;
 		align-items: flex-end;
-		margin-bottom: 2rem;
 	}
 
 	.add-player label {
@@ -175,37 +136,24 @@
 		flex-direction: column;
 		font-size: 0.85rem;
 		gap: 0.25rem;
+		color: var(--text-secondary);
 	}
 
-	input {
-		padding: 0.4rem 0.5rem;
-		border: 1px solid #ccc;
-		border-radius: 4px;
+	.player-list {
+		padding: 0;
+		overflow: hidden;
 	}
 
-	button {
-		padding: 0.45rem 0.9rem;
-		border: none;
-		border-radius: 4px;
-		background: #2f6feb;
-		color: white;
-		cursor: pointer;
+	.player-list h2 {
+		padding: 1.25rem 1.5rem 0;
 	}
 
-	button.danger {
-		background: #d1453b;
+	.player-list table {
+		margin-top: 1rem;
 	}
 
-	table {
-		width: 100%;
-		border-collapse: collapse;
-	}
-
-	th,
-	td {
-		text-align: left;
-		padding: 0.6rem;
-		border-bottom: 1px solid #eee;
+	.player-list .empty {
+		padding: 0 1.5rem 1.5rem;
 	}
 
 	.actions {
@@ -222,9 +170,5 @@
 		gap: 0.5rem;
 		flex-wrap: wrap;
 		align-items: center;
-	}
-
-	.empty {
-		color: #666;
 	}
 </style>
