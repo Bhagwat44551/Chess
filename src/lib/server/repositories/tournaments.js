@@ -76,3 +76,47 @@ export function deleteTournament(id) {
 	db.prepare('DELETE FROM tournaments WHERE id = ?').run(id);
 	return existing;
 }
+
+/**
+ * Tournaments currently in progress, with player count, matches played, and
+ * current round — used for the homepage "ongoing tournaments" summary.
+ */
+export function listOngoingTournamentsWithStats() {
+	return db
+		.prepare(
+			`SELECT
+				t.*,
+				(SELECT COUNT(*) FROM tournament_players tp WHERE tp.tournament_id = t.id) AS player_count,
+				(SELECT COUNT(*) FROM matches m WHERE m.tournament_id = t.id) AS matches_played,
+				(SELECT COALESCE(MAX(m.round), 0) FROM matches m WHERE m.tournament_id = t.id) AS current_round,
+				(SELECT p.name
+				 FROM tournament_players tp
+				 JOIN players p ON p.id = tp.player_id
+				 WHERE tp.tournament_id = t.id
+				 ORDER BY tp.points DESC, p.rating DESC
+				 LIMIT 1) AS leader_name
+			 FROM tournaments t
+			 WHERE t.status = 'in_progress'
+			 ORDER BY t.updated_at DESC`
+		)
+		.all();
+}
+
+/**
+ * Overall counts for the homepage stats bar.
+ */
+export function getOverallStats() {
+	const players = db.prepare('SELECT COUNT(*) AS count FROM players').get();
+	const tournaments = db.prepare('SELECT COUNT(*) AS count FROM tournaments').get();
+	const ongoing = db
+		.prepare(`SELECT COUNT(*) AS count FROM tournaments WHERE status = 'in_progress'`)
+		.get();
+	const matches = db.prepare('SELECT COUNT(*) AS count FROM matches').get();
+
+	return {
+		totalPlayers: players.count,
+		totalTournaments: tournaments.count,
+		ongoingTournaments: ongoing.count,
+		totalMatches: matches.count
+	};
+}
